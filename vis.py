@@ -14,7 +14,6 @@ def create_table_cloud(width, height, depth, dx=0, dy=0, dz=0, grid_size=0.01):
     xmap += dx
     ymap += dy
     zmap += dz
-    # points = np.stack([xmap, ymap, zmap], axis=-1)
     points = np.stack([xmap, -ymap, -zmap], axis=-1)
     points = points.reshape([-1, 3])
     cloud = o3d.geometry.PointCloud()
@@ -113,6 +112,7 @@ def visAnno(dataset_root, scene_name, anno_idx, camera, num_grasp=10, th=0.3, al
 def vis6D(dataset_root, scene_name, anno_idx, camera, align_to_table=True, save_folder='save_fig', show=False):
     model_list, obj_list, pose_list = generate_scene_model(dataset_root, scene_name, anno_idx, return_poses=True, align=align_to_table, camera=camera)
     point_cloud = generate_scene_pointcloud(dataset_root, scene_name, anno_idx, align=align_to_table, camera=camera)
+    point_cloud = point_cloud.voxel_down_sample(voxel_size=0.005)
 
     vis = o3d.visualization.Visualizer()
     vis.create_window(width = 1280, height = 720)
@@ -145,7 +145,10 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, save_folder='save_f
     vis = o3d.visualization.Visualizer()
     vis.create_window(width = 1280, height = 720)
     ctr = vis.get_view_control()
-    param = o3d.io.read_pinhole_camera_parameters('param_{}.json'.format(camera))
+    param = o3d.io.read_pinhole_camera_parameters('param_{}.json'.format('kinect'))
+
+    cam_pos = np.load(os.path.join(dataset_root, 'scenes', 'scene_0000', 'kinect', 'cam0_wrt_table.npy'))
+    param.extrinsic = np.linalg.inv(cam_pos).tolist()
 
     sampled_points, offsets, scores, _ = get_model_grasps('%s/grasp_label/%03d_labels.npz'%(dataset_root, obj_idx))
 
@@ -175,11 +178,8 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, save_folder='save_f
                     angle, depth, width = offset[v, a, d]
                     if score[v, a, d] > th or score[v, a, d] < 0:
                         continue
-                    if width > max_width:
-                        continue
                     R = viewpoint_params_to_matrix(-view, angle)
-                    t = transform_points(target_point[np.newaxis,:], trans).squeeze()
-                    R = np.dot(trans[:3,:3], R)
+                    t = target_point
                     gripper = plot_gripper_pro_max(t, R, width, depth, 1.1-score[v, a, d])
                     grippers.append(gripper)
                     flag = True
@@ -203,5 +203,7 @@ if __name__ == '__main__':
     dataset_root = '../'
     scene_name = 'scene_0000'
     anno_idx = 0
+    obj_idx = 0
     visAnno(dataset_root, scene_name, anno_idx, camera, num_grasp=1, th=0.5, align_to_table=True, max_width=0.08, save_folder='save_fig', show=False)
     vis6D(dataset_root, scene_name, anno_idx, camera, align_to_table=True, save_folder='save_fig', show=False)
+    visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, save_folder='save_fig', show=False)

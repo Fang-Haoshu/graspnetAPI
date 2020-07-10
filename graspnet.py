@@ -30,7 +30,7 @@ __version__ = '1.0'
 #  loadData   - Load data path with the specified data ids.
 #  showObjGrasp   - Save visualization of the grasp pose of specified object ids.
 #  showSceneGrasp   - Save visualization of the grasp pose of specified scene ids.
-#  show6DPose   - Save visualization of the 6d pose of specified scene ids.
+#  show6DPose   - Save visualization of the 6d pose of specified scene ids, project obj models onto pointcloud
 # Throughout the API "ann"=annotation, "obj"=object, and "img"=image.
 
 # GraspNet Toolbox.      version 1.0
