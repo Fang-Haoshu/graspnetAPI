@@ -24,35 +24,35 @@ def get_mat(x,y,z, alpha, beta, gamma):
 		pass         
 
 def pos_quat_to_pose_4x4(pos, quat):
-    """
-    Convert pose, 4x4 format into pos and quat
-    
-    Args:
-        pose: numpy array, 4x4
-    Returns:
-    	pos: length-3 position
-        quat: length-4 quaternion
+	"""pose = pos_quat_to_pose_4x4(pos, quat)
+	Convert pos and quat into pose, 4x4 format
 
-    """
-    pose = np.zeros([4, 4])
-    mat = quat2mat(quat)
-    pose[0:3, 0:3] = mat[:, :]
-    pose[0:3, -1] = pos[:]
-    pose[-1, -1] = 1
-    return pose
+	Args:
+	    pos: length-3 position
+	    quat: length-4 quaternion
+
+	Returns:
+	    pose: numpy array, 4x4
+	"""
+	pose = np.zeros([4, 4])
+	mat = quat2mat(quat)
+	pose[0:3, 0:3] = mat[:, :]
+	pose[0:3, -1] = pos[:]
+	pose[-1, -1] = 1
+	return pose
 
 
 def pose_4x4_to_pos_quat(pose):
-	"""pose = pos_quat_to_pose_4x4(pos, quat)
-    Convert pos and quat into pose, 4x4 format
+	"""
+	Convert pose, 4x4 format into pos and quat
 
-    Args:
-        pos: length-3 position
-        quat: length-4 quaternion
+	Args:
+	    pose: numpy array, 4x4
+	Returns:
+		pos: length-3 position
+	    quat: length-4 quaternion
 
-    Returns:
-        pose: numpy array, 4x4
-    """
+	"""
 	mat = pose[:3, :3]
 	quat = mat2quat(mat)
 	pos = np.zeros([3])
