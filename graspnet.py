@@ -20,17 +20,17 @@ __version__ = '1.0'
 # 6d poses not all functions are defined (e.g. collisions are undefined).
 
 # The following API functions are defined:
-#  GraspNet   - GraspNet api class that loads GraspNet annotation file and prepare data structures.
-#  getSceneIds  - Get scene ids that satisfy given filter conditions.
-#  getObjIds  - Get obj ids that satisfy given filter conditions.
-#  getDataIds  - Get data ids that satisfy given filter conditions.
-#  loadGraspLabels   - Load grasp labels with the specified object ids.
-#  loadObjModels   - Load object 3d mesh model with the specified object ids.
-#  loadCollisionLabels   - Load collision labels with the specified scene ids.
-#  loadData   - Load data path with the specified data ids.
-#  showObjGrasp   - Save visualization of the grasp pose of specified object ids.
-#  showSceneGrasp   - Save visualization of the grasp pose of specified scene ids.
-#  show6DPose   - Save visualization of the 6d pose of specified scene ids, project obj models onto pointcloud
+#  GraspNet             - GraspNet api class that loads GraspNet annotation file and prepare data structures.
+#  getSceneIds          - Get scene ids that satisfy given filter conditions.
+#  getObjIds            - Get obj ids that satisfy given filter conditions.
+#  getDataIds           - Get data ids that satisfy given filter conditions.
+#  loadGraspLabels      - Load grasp labels with the specified object ids.
+#  loadObjModels        - Load object 3d mesh model with the specified object ids.
+#  loadCollisionLabels  - Load collision labels with the specified scene ids.
+#  loadData             - Load data path with the specified data ids.
+#  showObjGrasp         - Save visualization of the grasp pose of specified object ids.
+#  showSceneGrasp       - Save visualization of the grasp pose of specified scene ids.
+#  show6DPose           - Save visualization of the 6d pose of specified scene ids, project obj models onto pointcloud
 # Throughout the API "ann"=annotation, "obj"=object, and "img"=image.
 
 # GraspNet Toolbox.      version 1.0
@@ -46,7 +46,7 @@ def _isArrayLike(obj):
     return hasattr(obj, '__iter__') and hasattr(obj, '__len__')
 
 class GraspNet():
-    def __init__(self, root, valid_obj_idxs, grasp_labels, camera='kinect', split='train'):
+    def __init__(self, root, camera='kinect', split='train'):
         assert(camera in ['kinect','realsense'], 'camera should be kinect or realsense')
         assert(split in ['train','test','test_seen','test_similar','test_novel'], 'split should be train/test/test_seen/test_similar/test_novel')
         self.root = root
