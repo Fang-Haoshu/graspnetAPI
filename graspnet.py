@@ -47,8 +47,8 @@ def _isArrayLike(obj):
 
 class GraspNet():
     def __init__(self, root, camera='kinect', split='train'):
-        assert(camera in ['kinect','realsense'], 'camera should be kinect or realsense')
-        assert(split in ['train','test','test_seen','test_similar','test_novel'], 'split should be train/test/test_seen/test_similar/test_novel')
+        assert camera in ['kinect','realsense'], 'camera should be kinect or realsense'
+        assert split in ['train','test','test_seen','test_similar','test_novel'], 'split should be train/test/test_seen/test_similar/test_novel'
         self.root = root
         self.camera = camera
         self.split = split
@@ -70,7 +70,7 @@ class GraspNet():
         self.segLabelPath = []
         self.metaPath = []
         self.sceneName = []
-        for i in tqdm(sceneIds, desc = 'Loading data path...'):
+        for i in tqdm(self.sceneIds, desc = 'Loading data path...'):
             for img_num in range(256):
                 self.rgbPath.append(os.path.join(root,'scenes', 'scene_'+str(i).zfill(4), camera, 'rgb', str(img_num).zfill(4)+'.png'))
                 self.depthPath.append(os.path.join(root,'scenes', 'scene_'+str(i).zfill(4), camera, 'depth', str(img_num).zfill(4)+'.png'))
@@ -79,7 +79,7 @@ class GraspNet():
                 self.sceneName.append('scene_'+str(i).zfill(4))
 
         
-        self.objIds = self.getObjIds(sceneIds)
+        self.objIds = self.getObjIds(self.sceneIds)
 
     def __len__(self):
         return len(self.depthPath)
@@ -89,11 +89,11 @@ class GraspNet():
         if objIds is None:
             return self.sceneIds
 
-        assert(_isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers')
+        assert _isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers'
         objIds = objIds if _isArrayLike(objIds) else [objIds]
         sceneIds = []
         for i in self.sceneIds:
-            f = open(os.path.join(root,'scenes', 'scene_'+str(i).zfill(4), 'object_id_list.txt'))
+            f = open(os.path.join(self.root,'scenes', 'scene_'+str(i).zfill(4), 'object_id_list.txt'))
             idxs = [int(line.strip()) for line in f.readlines()]
             check = all(item in idxs for item in objIds)
             if check:
@@ -106,11 +106,11 @@ class GraspNet():
         if sceneIds is None:
             return self.objIds
 
-        assert(_isArrayLike(sceneIds) or isinstance(sceneIds,int), 'sceneIds must be integer or a list/numy array of integers')
+        assert _isArrayLike(sceneIds) or isinstance(sceneIds,int), 'sceneIds must be integer or a list/numy array of integers'
         sceneIds = sceneIds if _isArrayLike(sceneIds) else [sceneIds]
         objIds = []
         for i in sceneIds:
-            f = open(os.path.join(root,'scenes', 'scene_'+str(i).zfill(4), 'object_id_list.txt'))
+            f = open(os.path.join(self.root,'scenes', 'scene_'+str(i).zfill(4), 'object_id_list.txt'))
             idxs = [int(line.strip()) for line in f.readlines()]
             objIds = list(set(objIds+idxs))
 
@@ -134,12 +134,12 @@ class GraspNet():
     def loadGraspLabels(self, objIds=None):
         # load object-level grasp labels of the given obj ids
         objIds = self.objIds if objIds is None else objIds
-        assert(_isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers')
+        assert _isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers'
         objIds = objIds if _isArrayLike(objIds) else [objIds]
-        graspLabels = {}
+        graspLabels = []
         for i in tqdm(objIds, desc='Loading grasping labels...'):
             file = np.load(os.path.join(self.root, 'grasp_label', '{}_labels.npz'.format(str(i).zfill(3))))
-            graspLabels[i] = (file['points'].astype(np.float32), file['offsets'].astype(np.float32), file['scores'].astype(np.float32))
+            graspLabels.append((file['points'].astype(np.float32), file['offsets'].astype(np.float32), file['scores'].astype(np.float32)))
 
         return graspLabels
 
@@ -147,10 +147,10 @@ class GraspNet():
         # load object 3D models of the given obj ids
         import open3d as o3d
         objIds = self.objIds if objIds is None else objIds
-        assert(_isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers')
+        assert _isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers'
         objIds = objIds if _isArrayLike(objIds) else [objIds]
         models = []
-        for i in objIds:
+        for i in tqdm(objIds, desc = 'Loading objects...'):
             plyfile = os.path.join(self.root, 'models', '%03d'%i, 'nontextured.ply')
             models.append(o3d.io.read_point_cloud(plyfile))
 
@@ -159,14 +159,15 @@ class GraspNet():
     def loadCollisionLabels(self, sceneIds=None):
         # load scene-level collision labels given scene ids
         sceneIds = self.sceneIds if sceneIds is None else sceneIds
-        assert(_isArrayLike(sceneIds) or isinstance(sceneIds,int), 'sceneIds must be integer or a list/numy array of integers')
+        assert _isArrayLike(sceneIds) or isinstance(sceneIds,int), 'sceneIds must be integer or a list/numy array of integers'
         sceneIds = sceneIds if _isArrayLike(sceneIds) else [sceneIds]
-        collisionLabels = {}
+        collisionLabels = []
         for i in tqdm(sceneIds, desc = 'Loading collision labels...'):
-            labels = np.load(os.path.join(root, 'collision_label', 'scene_'+str(i).zfill(4),  'collision_labels.npz'))
-            collisionLabels['scene_'+str(i).zfill(4)] = {}
+            labels = np.load(os.path.join(self.root, 'collision_label', 'scene_'+str(i).zfill(4),  'collision_labels.npz'))
+            collisionLabel = []
             for j in range(len(labels)):
-                collisionLabels['scene_'+str(i).zfill(4)][j] = labels['arr_{}'.format(j)]
+                collisionLabel.append(labels['arr_{}'.format(j)])
+            collisionLabels.append(collisionLabel)
 
         return collisionLabels
 
@@ -205,7 +206,8 @@ class GraspNet():
             if format == '6d':
                 visAnno(self.root, scene_name, 0, self.camera, num_grasp=numGrasp, th=th, align_to_table=True, max_width=0.08, save_folder=saveFolder, show=show)
             elif format == 'rect':
-                @TODO minghao
+                pass
+                # @TODO minghao
             else:
                 print('format should be 6d or rect')
                 return 0
