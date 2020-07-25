@@ -65,6 +65,7 @@ class GraspNet():
         elif split == 'test_novel':
             self.sceneIds = list( range(130,160) )
 
+        self.sceneIds = [0]
         self.rgbPath = []
         self.depthPath = []
         self.segLabelPath = []
@@ -136,10 +137,10 @@ class GraspNet():
         objIds = self.objIds if objIds is None else objIds
         assert _isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers'
         objIds = objIds if _isArrayLike(objIds) else [objIds]
-        graspLabels = []
+        graspLabels = {}
         for i in tqdm(objIds, desc='Loading grasping labels...'):
             file = np.load(os.path.join(self.root, 'grasp_label', '{}_labels.npz'.format(str(i).zfill(3))))
-            graspLabels.append((file['points'].astype(np.float32), file['offsets'].astype(np.float32), file['scores'].astype(np.float32)))
+            graspLabels[i] = (file['points'].astype(np.float32), file['offsets'].astype(np.float32), file['scores'].astype(np.float32))
 
         return graspLabels
 
@@ -156,27 +157,43 @@ class GraspNet():
 
         return models
 
+    def loadObjTrimesh(self, objIds=None):
+        # load object 3D trimesh of the given obj ids
+        import trimesh
+        objIds = self.objIds if objIds is None else objIds
+        assert _isArrayLike(objIds) or isinstance(objIds,int), 'objIds must be integer or a list/numy array of integers'
+        objIds = objIds if _isArrayLike(objIds) else [objIds]
+        models = []
+        for i in tqdm(objIds, desc = 'Loading objects...'):
+            plyfile = os.path.join(self.root, 'models', '%03d'%i, 'nontextured.ply')
+            models.append(trimesh.load(plyfile))
+
+        return models
+
     def loadCollisionLabels(self, sceneIds=None):
         # load scene-level collision labels given scene ids
         sceneIds = self.sceneIds if sceneIds is None else sceneIds
         assert _isArrayLike(sceneIds) or isinstance(sceneIds,int), 'sceneIds must be integer or a list/numy array of integers'
         sceneIds = sceneIds if _isArrayLike(sceneIds) else [sceneIds]
-        collisionLabels = []
-        for i in tqdm(sceneIds, desc = 'Loading collision labels...'):
-            labels = np.load(os.path.join(self.root, 'collision_label', 'scene_'+str(i).zfill(4),  'collision_labels.npz'))
+        collisionLabels = {}
+        for sid in tqdm(sceneIds, desc = 'Loading collision labels...'):
+            labels = np.load(os.path.join(self.root, 'collision_label', 'scene_'+str(sid).zfill(4),  'collision_labels.npz'))
             collisionLabel = []
             for j in range(len(labels)):
                 collisionLabel.append(labels['arr_{}'.format(j)])
-            collisionLabels.append(collisionLabel)
+            collisionLabels['scene_'+str(sid).zfill(4)] = collisionLabel
 
         return collisionLabels
 
     def loadData(self, ids=None):
         # return data and anno path of given indexes
         if ids is None:
-            return zip(self.rgbPath, self.depthPath, self.segLabelPath, self.metaPath, self.sceneName)
+            return (self.rgbPath, self.depthPath, self.segLabelPath, self.metaPath, self.sceneName)
 
-        return zip( [self.rgbPath[id] for id in ids],
+        if isinstance(ids,int):
+            return (self.rgbPath[ids], self.depthPath[ids], self.segLabelPath[ids], self.metaPath[ids], self.sceneName[ids])
+
+        return ( [self.rgbPath[id] for id in ids],
                     [self.depthPath[id] for id in ids],
                     [self.segLabelPath[id] for id in ids],
                     [self.metaPath[id] for id in ids],
