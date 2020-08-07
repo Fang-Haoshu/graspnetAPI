@@ -3,8 +3,8 @@ import time
 import numpy as np
 import open3d as o3d
 from transforms3d.euler import euler2mat, quat2mat
-from utils import generate_scene_model, generate_scene_pointcloud, generate_views, get_model_grasps, plot_gripper_pro_max, transform_points
-from rotation import viewpoint_params_to_matrix, batch_viewpoint_params_to_matrix
+from .utils import generate_scene_model, generate_scene_pointcloud, generate_views, get_model_grasps, plot_gripper_pro_max, transform_points
+from .rotation import viewpoint_params_to_matrix, batch_viewpoint_params_to_matrix
 
 def create_table_cloud(width, height, depth, dx=0, dy=0, dz=0, grid_size=0.01):
     xmap = np.linspace(0, width, int(width/grid_size))

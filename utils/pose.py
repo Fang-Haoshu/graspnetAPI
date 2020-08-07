@@ -1,9 +1,13 @@
+__author__ = 'Minghao Gou'
+__version__ = '1.0'
 """
-define the pose class and functions associated with this class
+define the pose class and functions associated with this class.
 """
+
 import numpy as np
-import trans3d
+from . import trans3d
 from transforms3d.euler import euler2quat
+
 class Pose:
     def __init__(self,id,x,y,z,alpha,beta,gamma):
         self.id = id

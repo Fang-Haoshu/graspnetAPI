@@ -2,7 +2,7 @@ import os
 import open3d as o3d
 import numpy as np
 from PIL import Image
-from xmlhandler import xmlReader
+from .xmlhandler import xmlReader
 from transforms3d.euler import euler2mat
 
 class CameraInfo():

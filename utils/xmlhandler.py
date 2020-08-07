@@ -1,12 +1,15 @@
+__author__ = 'Minghao Gou'
+__version__ = '1.0'
+
 from xml.etree.ElementTree import Element, SubElement, tostring
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from transforms3d.quaternions import mat2quat, quat2axangle
 from transforms3d.euler import quat2euler
 import numpy as np
-from trans3d import get_mat, pos_quat_to_pose_4x4
+from .trans3d import get_mat, pos_quat_to_pose_4x4
 import os
-from pose import pose_list_from_pose_vector_list
+from .pose import pose_list_from_pose_vector_list
 
 
 class xmlWriter():
