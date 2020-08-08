@@ -198,6 +198,55 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, save_folder='save_f
     if show:
         o3d.visualization.draw_geometries([model, *grippers])
 
+def vis_rec_grasp(rec_grasp_tuples,numGrasp,image_path,save_path,show=False):
+    '''
+    author: Minghao Gou
+    
+    **Input:**
+
+    - rec_grasp_tuples: np.array of rectangle grasps
+
+    - numGrasp: int of total grasps number to show
+
+    - image_path: string of path of the image
+
+    - image_path: string of the path to save the image
+
+    - show: bool of whether to show the image 
+
+    **Output:**
+
+    - no output but display the rectangle grasps in image
+    '''
+    import cv2
+    import numpy as np
+    import os
+    img = cv2.imread(image_path)
+    if len(rec_grasp_tuples) > numGrasp:
+            np.random.shuffle(rec_grasp_tuples)
+            rec_grasp_tuples = rec_grasp_tuples[0:numGrasp]
+    for rec_grasp_tuple in rec_grasp_tuples:
+        center_x,center_y,open_x,open_y,height,score = rec_grasp_tuple
+        center = np.array([center_x,center_y])
+        left = np.array([open_x,open_y])
+        axis = left - center
+        normal = np.array([-axis[1],axis[0]])
+        normal = normal / np.linalg.norm(normal) * height / 2
+        p1 = center + normal + axis
+        p2 = center + normal - axis
+        p3 = center - normal - axis
+        p4 = center - normal + axis
+        cv2.line(img, (int(p1[0]),int(p1[1])), (int(p2[0]),int(p2[1])), (0,0,255), 1, 8)
+        cv2.line(img, (int(p2[0]),int(p2[1])), (int(p3[0]),int(p3[1])), (255,0,0), 3, 8)
+        cv2.line(img, (int(p3[0]),int(p3[1])), (int(p4[0]),int(p4[1])), (0,0,255), 1, 8)
+        cv2.line(img, (int(p4[0]),int(p4[1])), (int(p1[0]),int(p1[1])), (255,0,0), 3, 8)
+    cv2.imwrite(save_path,img)
+    if show:
+        cv2.imshow('grasp',img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+
 if __name__ == '__main__':
     camera = 'kinect'
     dataset_root = '../'

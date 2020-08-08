@@ -1,4 +1,4 @@
-__author__ = 'hsfang, Minghao Gou'
+__author__ = 'hsfang, mhgou'
 __version__ = '1.0'
 
 # Interface for accessing the GraspNet-1Billion dataset.
@@ -54,15 +54,15 @@ class GraspNet():
         '''
         **input**:
 
-        - camera: string of type of camera: kinect, realsense or both
+        - camera: string of type of camera: kinect or realsense
 
-        - split: string of type of split of dataset: "all", "train", "test", "test_seen", "test_similar"or "test_novel"
+        - split: string of type of split of dataset: "all", "train", "test", "test_seen", "test_similar" or "test_novel"
 
         - sceneIDs: a list of scene ids of the dataset, split should be "user_define"
         '''
 
-        assert camera in ['kinect', 'realsense', 'both'], 'camera should be kinect, realsense or both'
-        assert split in ['all', 'train', 'test', 'test_seen', 'test_similar', 'test_novel'], 'split should be all/train/test/test_seen/test_similar/test_novel/user_define'
+        assert camera in ['kinect', 'realsense'], 'camera should be kinect or realsense'
+        assert split in ['all', 'train', 'test', 'test_seen', 'test_similar', 'test_novel'], 'split should be all/train/test/test_seen/test_similar/test_novel'
         self.root = root
         self.camera = camera
         self.split = split
@@ -264,7 +264,7 @@ class GraspNet():
         '''
         **Input:**
 
-        - ids: int or list of int the the data ids.
+        - ids: int or list of int of the the data ids.
 
         **Output:**
 
@@ -294,8 +294,9 @@ class GraspNet():
         for obj_id in objIds:
             visObjGrasp(self.root, obj_id, num_grasp=numGrasp,th=th, save_folder=saveFolder, show=show)
 
-    def showSceneGrasp(self, sceneIds=[], format='6d', numGrasp=2, th=0.5, saveFolder='save_fig', show=False):
+    def showSceneGrasp(self, sceneIds=[], format='6d', numGrasp=2, th=0.5, saveFolder='save_fig', show=False, camera = 'kinect', annId = 0):
         from utils.vis import visAnno
+        from utils.vis import vis_rec_grasp
         sceneIds = sceneIds if _isArrayLike(sceneIds) else [sceneIds]
         if len(sceneIds) == 0:
             print('You need specify scene ids.')
@@ -305,11 +306,17 @@ class GraspNet():
         for scene_id in sceneIds:
             scene_name = 'scene_'+str(scene_id).zfill(4)
             if format == '6d':
+                # for showing 6d grasp, the 'camera' and 'annId' parameters are not used
                 visAnno(self.root, scene_name, 0, self.camera, num_grasp=numGrasp, th=th,
                         align_to_table=True, max_width=0.08, save_folder=saveFolder, show=show)
             elif format == 'rect':
-                pass
-                # @TODO minghao
+                # for showing rectangle grasp, the 'th' parameter is not used
+                rec_grasp_tuples = np.load(os.path.join(self.root,'scenes','scene_%04d' % (scene_id,),camera,'rectangle_grasp','%04d.npy' %(annId,)))
+                vis_rec_grasp(rec_grasp_tuples=rec_grasp_tuples,
+                    numGrasp = numGrasp,
+                    image_path=os.path.join(self.root,'scenes','scene_%04d' % (scene_id,),camera,'rgb','%04d.png' %(annId,)),
+                    save_path=os.path.join(saveFolder,'scene_%04d_%s_%04d_rectangle_grasp.png' %(scene_id,camera,annId)),
+                    show=show)
             else:
                 print('format should be 6d or rect')
                 return 0
