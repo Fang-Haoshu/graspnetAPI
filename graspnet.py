@@ -282,9 +282,9 @@ class GraspNet():
 
         **Output:**
 
-        - a python dictionary. The key is the object id and the content is a numpy array.
+        - a python dictionary. The key is the object id and the content is also a dict that.
         
-        The element of each array gives the parameters of a grasp.
+        The element of each dict gives the parameters of a grasp.
         '''
         import numpy as np
         from utils.xmlhandler import xmlReader
@@ -295,10 +295,12 @@ class GraspNet():
         pose_vectors = scene_reader.getposevectorlist()
 
         obj_list,pose_list = generate_scene(camera_pose,pose_vectors)
+        print(obj_list)
+        print(pose_list)
         if grasp_labels is None:
             print('warning: grasp_labels are not given, calling self.loadGraspLabels to retrieve them')
             grasp_labels = self.loadGraspLabels(objIds = obj_list)
-
+        print('debug,grasp_label',grasp_labels.keys())
         if collision_labels is None:
             print('warning: collision_labels are not given, calling self.loadCollisionLabels to retrieve them')
             collision_labels = self.loadCollisionLabels(sceneId)
@@ -314,8 +316,8 @@ class GraspNet():
 
         for i, (obj_idx, trans) in enumerate(zip(obj_list, pose_list)):
             # sampled_points, offsets, scores, _ = get_model_grasps('%s/%03d_labels.npz'%(labeldir, obj_idx))
-            sampled_points, offsets, fric_coefs, _ = get_model_grasps(grasp_labels[obj_idx])
-            collision = collision_dump['arr_{}'.format(i)]
+            sampled_points, offsets, fric_coefs = grasp_labels[obj_idx]
+            collision = collision_dump[i]
             # print('collision.shape',collision.shape)
             point_inds = np.arange(sampled_points.shape[0])
 
@@ -338,8 +340,8 @@ class GraspNet():
             Rs = batch_viewpoint_params_to_matrix(-views, angles)
             Rs = np.matmul(trans[np.newaxis, :3, :3], Rs)
 
-            grasp[i] = {'points':target_points,'Rs':Rs,'depths':depths,'widths:':widths,'fric_coefs':fric_coefs}
-
+            grasp[obj_idx] = {'points':target_points,'Rs':Rs,'depths':depths,'widths':widths,'fric_coefs':fric_coefs}
+        
         return grasp
 
 

@@ -206,11 +206,9 @@ def transform_points(points, trans):
     points_ = np.matmul(trans, points_.T).T
     return points_[:,:3]
 
-def get_model_grasps(data):
-    if type(data) == str:
-        label = np.load(data)
-    else:
-        label = data
+def get_model_grasps(datapath):
+    label = np.load(datapath)
+    print(len(label))
     points = label['points']
     offsets = label['offsets']
     scores = label['scores']
