@@ -206,8 +206,11 @@ def transform_points(points, trans):
     points_ = np.matmul(trans, points_.T).T
     return points_[:,:3]
 
-def get_model_grasps(datapath):
-    label = np.load(datapath)
+def get_model_grasps(data):
+    if type(data) == str:
+        label = np.load(data)
+    else:
+        label = data
     points = label['points']
     offsets = label['offsets']
     scores = label['scores']
@@ -317,3 +320,36 @@ def find_scene_by_model_id(dataset_root, model_id_list):
                 print(obj_idx, scene_name)
                 break
     return picked_scene_names
+
+
+def generate_scene(camera_pose, pose_vectors):
+    import numpy as np
+    obj_list = []
+    mat_list = []
+    pose_list = []
+    for posevector in pose_vectors:
+        obj_idx, mat = parse_posevector(posevector)
+        obj_list.append(obj_idx)
+        mat_list.append(mat)
+
+    for obj_idx, mat in zip(obj_list, mat_list):
+        pose = np.dot(camera_pose, mat)
+        pose_list.append(pose)
+
+    return obj_list, pose_list
+
+def batch_viewpoint_params_to_matrix(batch_towards, batch_angle):
+    axis_x = batch_towards
+    ones = np.ones(axis_x.shape[0], dtype=axis_x.dtype)
+    zeros = np.zeros(axis_x.shape[0], dtype=axis_x.dtype)
+    axis_y = np.stack([-axis_x[:,1], axis_x[:,0], zeros], axis=-1)
+    axis_x = axis_x / np.linalg.norm(axis_x, axis=-1, keepdims=True)
+    axis_y = axis_y / np.linalg.norm(axis_y, axis=-1, keepdims=True)
+    axis_z = np.cross(axis_x, axis_y)
+    sin = np.sin(batch_angle)
+    cos = np.cos(batch_angle)
+    R1 = np.stack([ones, zeros, zeros, zeros, cos, -sin, zeros, sin, cos], axis=-1)
+    R1 = R1.reshape([-1,3,3])
+    R2 = np.stack([axis_x, axis_y, axis_z], axis=-1)
+    matrix = np.matmul(R2, R1)
+    return matrix.astype(np.float32)
