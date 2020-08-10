@@ -378,7 +378,7 @@ class GraspNet():
         from .utils.vis import visObjGrasp
         objIds = objIds if _isArrayLike(objIds) else [objIds]
         if len(objIds) == 0:
-            print('You need specify object ids.')
+            print('You need to specify object ids.')
             return 0
 
         if not os.path.exists(saveFolder):
@@ -391,7 +391,7 @@ class GraspNet():
         from .utils.vis import vis_rec_grasp
         sceneIds = sceneIds if _isArrayLike(sceneIds) else [sceneIds]
         if len(sceneIds) == 0:
-            print('You need specify scene ids.')
+            print('You need to specify scene ids.')
             return 0
         if not os.path.exists(saveFolder):
             os.mkdir(saveFolder)
@@ -410,7 +410,7 @@ class GraspNet():
                     save_path=os.path.join(saveFolder,'scene_%04d_%s_%04d_rectangle_grasp.png' %(scene_id,camera,annId)),
                     show=show)
             else:
-                print('format should be 6d or rect')
+                print('format should be "6d" or "rect"')
                 return 0
 
     def show6DPose(self, sceneIds, saveFolder='save_fig', show=False):

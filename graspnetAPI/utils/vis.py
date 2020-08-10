@@ -167,7 +167,7 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, save_folder='save_f
     vis = o3d.visualization.Visualizer()
     vis.create_window(width = 1280, height = 720)
     ctr = vis.get_view_control()
-    param = get_camera_parameters(camera=camera)
+    param = get_camera_parameters(camera='kinect')
 
     cam_pos = np.load(os.path.join(dataset_root, 'scenes', 'scene_0000', 'kinect', 'cam0_wrt_table.npy'))
     param.extrinsic = np.linalg.inv(cam_pos).tolist()
