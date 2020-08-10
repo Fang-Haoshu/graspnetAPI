@@ -9,7 +9,7 @@ graspnet_root = '/DATA1/Benchmark/graspnet' # ROOT PATH FOR GRASPNET
 ####################################################################
 
 sceneId = 1
-from graspnet import GraspNet
+from graspnetAPI import GraspNet
 
 # initialize a GraspNet instance  
 g = GraspNet(graspnet_root, camera='kinect', split='train')

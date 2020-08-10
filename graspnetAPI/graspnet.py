@@ -288,8 +288,8 @@ class GraspNet():
         The element of each dict gives the parameters of a grasp.
         '''
         import numpy as np
-        from utils.xmlhandler import xmlReader
-        from utils.utils import generate_scene, generate_views, get_model_grasps, batch_viewpoint_params_to_matrix
+        from .utils.xmlhandler import xmlReader
+        from .utils.utils import generate_scene, generate_views, get_model_grasps, batch_viewpoint_params_to_matrix
         camera_poses = np.load(os.path.join(self.root,'scenes','scene_%04d' %(sceneId,),camera, 'camera_poses.npy'))
         camera_pose = camera_poses[annId]
         scene_reader = xmlReader(os.path.join(self.root,'scenes','scene_%04d' %(sceneId,),camera,'annotations','%04d.xml' %(annId,)))
@@ -364,7 +364,7 @@ class GraspNet():
                 [self.sceneName[id] for id in ids])
 
     def showObjGrasp(self, objIds=[], numGrasp=10, th=0.5, saveFolder='save_fig', show=False):
-        from utils.vis import visObjGrasp
+        from .utils.vis import visObjGrasp
         objIds = objIds if _isArrayLike(objIds) else [objIds]
         if len(objIds) == 0:
             print('You need specify object ids.')
@@ -376,8 +376,8 @@ class GraspNet():
             visObjGrasp(self.root, obj_id, num_grasp=numGrasp,th=th, save_folder=saveFolder, show=show)
 
     def showSceneGrasp(self, sceneIds=[], format='6d', numGrasp=2, th=0.5, saveFolder='save_fig', show=False, camera = 'kinect', annId = 0):
-        from utils.vis import visAnno
-        from utils.vis import vis_rec_grasp
+        from .utils.vis import visAnno
+        from .utils.vis import vis_rec_grasp
         sceneIds = sceneIds if _isArrayLike(sceneIds) else [sceneIds]
         if len(sceneIds) == 0:
             print('You need specify scene ids.')
@@ -403,7 +403,7 @@ class GraspNet():
                 return 0
 
     def show6DPose(self, sceneIds, saveFolder='save_fig', show=False):
-        from utils.vis import vis6D
+        from .utils.vis import vis6D
         sceneIds = sceneIds if _isArrayLike(sceneIds) else [sceneIds]
         if len(sceneIds) == 0:
             print('You need specify scene ids.')

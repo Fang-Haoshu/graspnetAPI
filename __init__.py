@@ -1,1 +1,0 @@
-from graspnet import GraspNet

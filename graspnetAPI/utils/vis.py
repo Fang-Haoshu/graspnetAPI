@@ -21,6 +21,28 @@ def create_table_cloud(width, height, depth, dx=0, dy=0, dz=0, grid_size=0.01):
     return cloud
 
 
+def get_camera_parameters(camera='kinect'):
+    '''
+    author: Minghao Gou
+    
+    **Input:**
+
+    - camera: string of type of camera: 'kinect' or 'realsense'
+
+    **Output:**
+
+    - open3d.camera.PinholeCameraParameters
+    '''
+    import open3d as o3d
+    param = o3d.camera.PinholeCameraParameters()
+    param.extrinsic = np.eye(4,dtype=np.float64)
+    # param.intrinsic = o3d.camera.PinholeCameraIntrinsic()
+    if camera == 'kinect':
+        param.intrinsic.set_intrinsics(1280,720,631.5,631.2,639.5,359.5)
+    elif camera == 'realsense':
+        param.intrinsic.set_intrinsics(1280,720,927.17,927.37,639.5,359.5)
+    return param
+
 def visAnno(dataset_root, scene_name, anno_idx, camera, num_grasp=10, th=0.3, align_to_table=True, max_width=0.08, save_folder='save_fig', show=False):
     model_list, obj_list, pose_list = generate_scene_model(dataset_root, scene_name, anno_idx, return_poses=True, align=align_to_table, camera=camera)
     point_cloud = generate_scene_pointcloud(dataset_root, scene_name, anno_idx, align=align_to_table, camera=camera)
@@ -33,7 +55,7 @@ def visAnno(dataset_root, scene_name, anno_idx, camera, num_grasp=10, th=0.3, al
     vis = o3d.visualization.Visualizer()
     vis.create_window(width = 1280, height = 720)
     ctr = vis.get_view_control()
-    param = o3d.io.read_pinhole_camera_parameters('param_{}.json'.format(camera))
+    param = get_camera_parameters(camera=camera)
 
     if align_to_table:
         cam_pos = np.load(os.path.join(dataset_root, 'scenes', scene_name, camera, 'cam0_wrt_table.npy'))
@@ -117,7 +139,7 @@ def vis6D(dataset_root, scene_name, anno_idx, camera, align_to_table=True, save_
     vis = o3d.visualization.Visualizer()
     vis.create_window(width = 1280, height = 720)
     ctr = vis.get_view_control()
-    param = o3d.io.read_pinhole_camera_parameters('param_{}.json'.format(camera))
+    param = get_camera_parameters(camera=camera)
 
     if align_to_table:
         cam_pos = np.load(os.path.join(dataset_root, 'scenes', scene_name, camera, 'cam0_wrt_table.npy'))
@@ -145,7 +167,7 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, save_folder='save_f
     vis = o3d.visualization.Visualizer()
     vis.create_window(width = 1280, height = 720)
     ctr = vis.get_view_control()
-    param = o3d.io.read_pinhole_camera_parameters('param_{}.json'.format('kinect'))
+    param = get_camera_parameters(camera=camera)
 
     cam_pos = np.load(os.path.join(dataset_root, 'scenes', 'scene_0000', 'kinect', 'cam0_wrt_table.npy'))
     param.extrinsic = np.linalg.inv(cam_pos).tolist()
