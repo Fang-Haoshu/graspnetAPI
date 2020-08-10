@@ -261,7 +261,7 @@ class GraspNet():
             collisionLabels['scene_'+str(sid).zfill(4)] = collisionLabel
         return collisionLabels
 
-    def loadGrasp(self, sceneId, annId=0, camera='kinect', grasp_labels = None, collision_labels = None, grasp_thresh=0.4):
+    def loadGrasp(self, sceneId, annId=0, format = '6d', camera='kinect', grasp_labels = None, collision_labels = None, grasp_thresh=0.4):
         '''
         **Input:**
 
@@ -269,7 +269,9 @@ class GraspNet():
 
         - annId: int of annotation id.
 
-        - camera: string of camera type, 'kinect' or 'realsense'
+        - format: string of grasp format, '6d' or 'rect'.
+
+        - camera: string of camera type, 'kinect' or 'realsense'.
 
         - grasp_labels: dict of grasp labels. Call self.loadGraspLabels if not given.
 
@@ -288,58 +290,67 @@ class GraspNet():
         The element of each dict gives the parameters of a grasp.
         '''
         import numpy as np
-        from .utils.xmlhandler import xmlReader
-        from .utils.utils import generate_scene, generate_views, get_model_grasps, batch_viewpoint_params_to_matrix
-        camera_poses = np.load(os.path.join(self.root,'scenes','scene_%04d' %(sceneId,),camera, 'camera_poses.npy'))
-        camera_pose = camera_poses[annId]
-        scene_reader = xmlReader(os.path.join(self.root,'scenes','scene_%04d' %(sceneId,),camera,'annotations','%04d.xml' %(annId,)))
-        pose_vectors = scene_reader.getposevectorlist()
+        assert format == '6d' or format == 'rect', 'format must be "6d" or "rect"'
+        if format == '6d':
+            from .utils.xmlhandler import xmlReader
+            from .utils.utils import generate_scene, generate_views, get_model_grasps, batch_viewpoint_params_to_matrix
+            
+            camera_poses = np.load(os.path.join(self.root,'scenes','scene_%04d' %(sceneId,),camera, 'camera_poses.npy'))
+            camera_pose = camera_poses[annId]
+            scene_reader = xmlReader(os.path.join(self.root,'scenes','scene_%04d' %(sceneId,),camera,'annotations','%04d.xml' %(annId,)))
+            pose_vectors = scene_reader.getposevectorlist()
 
-        obj_list,pose_list = generate_scene(camera_pose,pose_vectors)
-        if grasp_labels is None:
-            print('warning: grasp_labels are not given, calling self.loadGraspLabels to retrieve them')
-            grasp_labels = self.loadGraspLabels(objIds = obj_list)
-        if collision_labels is None:
-            print('warning: collision_labels are not given, calling self.loadCollisionLabels to retrieve them')
-            collision_labels = self.loadCollisionLabels(sceneId)
+            obj_list,pose_list = generate_scene(camera_pose,pose_vectors)
+            if grasp_labels is None:
+                print('warning: grasp_labels are not given, calling self.loadGraspLabels to retrieve them')
+                grasp_labels = self.loadGraspLabels(objIds = obj_list)
+            if collision_labels is None:
+                print('warning: collision_labels are not given, calling self.loadCollisionLabels to retrieve them')
+                collision_labels = self.loadCollisionLabels(sceneId)
 
-        num_views, num_angles, num_depths = 300, 12, 4
-        template_views = generate_views(num_views)
-        template_views = template_views[np.newaxis, :, np.newaxis, np.newaxis, :]
-        template_views = np.tile(template_views, [1, 1, num_angles, num_depths, 1])
+            num_views, num_angles, num_depths = 300, 12, 4
+            template_views = generate_views(num_views)
+            template_views = template_views[np.newaxis, :, np.newaxis, np.newaxis, :]
+            template_views = np.tile(template_views, [1, 1, num_angles, num_depths, 1])
 
-        collision_dump = collision_labels['scene_'+str(sceneId).zfill(4)]
+            collision_dump = collision_labels['scene_'+str(sceneId).zfill(4)]
 
-        grasp = dict()
+            grasp = dict()
 
-        for i, (obj_idx, trans) in enumerate(zip(obj_list, pose_list)):
+            for i, (obj_idx, trans) in enumerate(zip(obj_list, pose_list)):
 
-            sampled_points, offsets, fric_coefs = grasp_labels[obj_idx]
-            collision = collision_dump[i]
-            point_inds = np.arange(sampled_points.shape[0])
+                sampled_points, offsets, fric_coefs = grasp_labels[obj_idx]
+                collision = collision_dump[i]
+                point_inds = np.arange(sampled_points.shape[0])
 
-            num_points = len(point_inds)
-            target_points = sampled_points[:, np.newaxis, np.newaxis, np.newaxis, :]
-            target_points = np.tile(target_points, [1, num_views, num_angles, num_depths, 1])
-            views = np.tile(template_views, [num_points, 1, 1, 1, 1])
-            angles = offsets[:, :, :, :, 0]
-            depths = offsets[:, :, :, :, 1]
-            widths = offsets[:, :, :, :, 2]
+                num_points = len(point_inds)
+                target_points = sampled_points[:, np.newaxis, np.newaxis, np.newaxis, :]
+                target_points = np.tile(target_points, [1, num_views, num_angles, num_depths, 1])
+                views = np.tile(template_views, [num_points, 1, 1, 1, 1])
+                angles = offsets[:, :, :, :, 0]
+                depths = offsets[:, :, :, :, 1]
+                widths = offsets[:, :, :, :, 2]
 
-            mask1 = ((fric_coefs < grasp_thresh) & (fric_coefs > 0) & ~collision)
-            target_points = target_points[mask1]
-            views = views[mask1]
-            angles = angles[mask1]
-            depths = depths[mask1]
-            widths = widths[mask1]
-            fric_coefs = fric_coefs[mask1]
+                mask1 = ((fric_coefs <= grasp_thresh) & (fric_coefs > 0) & ~collision)
+                target_points = target_points[mask1]
+                views = views[mask1]
+                angles = angles[mask1]
+                depths = depths[mask1]
+                widths = widths[mask1]
+                fric_coefs = fric_coefs[mask1]
 
-            Rs = batch_viewpoint_params_to_matrix(-views, angles)
-            Rs = np.matmul(trans[np.newaxis, :3, :3], Rs)
+                Rs = batch_viewpoint_params_to_matrix(-views, angles)
+                Rs = np.matmul(trans[np.newaxis, :3, :3], Rs)
 
-            grasp[obj_idx] = {'points':target_points,'Rs':Rs,'depths':depths,'widths':widths,'fric_coefs':fric_coefs}
-        
-        return grasp
+                grasp[obj_idx] = {'points':target_points,'Rs':Rs,'depths':depths,'widths':widths,'fric_coefs':fric_coefs}
+            
+            return grasp
+        else:
+            # 'rect'
+            # for rectangle grasp, collision labels and grasp labels are not necessray. 
+            rec_grasp = np.load(os.path.join(self.root,'scenes','scene_%04d' % sceneId,camera,'rectangle_grasp','%04d.npy' % annId))
+            mask = rec_grasp[:,5] <= grasp_thresh
+            return rec_grasp[mask]
 
     def loadData(self, ids=None):
         '''
