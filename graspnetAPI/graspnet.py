@@ -87,6 +87,7 @@ class GraspNet():
         self.segLabelPath = []
         self.metaPath = []
         self.sceneName = []
+        self.annId = []
 
         for i in tqdm(self.sceneIds, desc='Loading data path...'):
             for img_num in range(256):
@@ -99,6 +100,7 @@ class GraspNet():
                 self.metaPath.append(os.path.join(
                     root, 'scenes', 'scene_'+str(i).zfill(4), camera, 'meta', str(img_num).zfill(4)+'.mat'))
                 self.sceneName.append('scene_'+str(i).zfill(4))
+                self.annId.append(img_num)
 
         self.objIds = self.getObjIds(self.sceneIds)
 
@@ -365,14 +367,15 @@ class GraspNet():
         - if ids is not specified or is a list, returns a tuple of data path lists
         '''
         if ids is None:
-            return (self.rgbPath, self.depthPath, self.segLabelPath, self.metaPath, self.sceneName)
+            return (self.rgbPath, self.depthPath, self.segLabelPath, self.metaPath, self.sceneName, self.annId)
         if isinstance(ids, int):
-            return (self.rgbPath[ids], self.depthPath[ids], self.segLabelPath[ids], self.metaPath[ids], self.sceneName[ids])
+            return (self.rgbPath[ids], self.depthPath[ids], self.segLabelPath[ids], self.metaPath[ids], self.sceneName[ids], self.annId[ids])
         return ([self.rgbPath[id] for id in ids],
                 [self.depthPath[id] for id in ids],
                 [self.segLabelPath[id] for id in ids],
                 [self.metaPath[id] for id in ids],
-                [self.sceneName[id] for id in ids])
+                [self.sceneName[id] for id in ids],
+                [self.annId[id] for id in ids])
 
     def showObjGrasp(self, objIds=[], numGrasp=10, th=0.5, saveFolder='save_fig', show=False):
         from .utils.vis import visObjGrasp
