@@ -86,6 +86,7 @@ class GraspNet():
         self.depthPath = []
         self.segLabelPath = []
         self.metaPath = []
+        self.rectLabelPath = []
         self.sceneName = []
         self.annId = []
 
@@ -99,6 +100,8 @@ class GraspNet():
                     root, 'scenes', 'scene_'+str(i).zfill(4), camera, 'label', str(img_num).zfill(4)+'.png'))
                 self.metaPath.append(os.path.join(
                     root, 'scenes', 'scene_'+str(i).zfill(4), camera, 'meta', str(img_num).zfill(4)+'.mat'))
+                self.rectLabelPath.append(os.path.join(
+                    root, 'scenes', 'scene_'+str(i).zfill(4), camera, 'rectangle_grasp', str(img_num).zfill(4)+'.npy'))
                 self.sceneName.append('scene_'+str(i).zfill(4))
                 self.annId.append(img_num)
 
@@ -354,11 +357,13 @@ class GraspNet():
             mask = rec_grasp[:,5] <= grasp_thresh
             return rec_grasp[mask]
 
-    def loadData(self, ids=None):
+    def loadData(self, ids=None, *extargs):
         '''
         **Input:**
 
         - ids: int or list of int of the the data ids.
+
+        - 
 
         **Output:**
 
@@ -367,15 +372,29 @@ class GraspNet():
         - if ids is not specified or is a list, returns a tuple of data path lists
         '''
         if ids is None:
-            return (self.rgbPath, self.depthPath, self.segLabelPath, self.metaPath, self.sceneName, self.annId)
-        if isinstance(ids, int):
-            return (self.rgbPath[ids], self.depthPath[ids], self.segLabelPath[ids], self.metaPath[ids], self.sceneName[ids], self.annId[ids])
-        return ([self.rgbPath[id] for id in ids],
-                [self.depthPath[id] for id in ids],
-                [self.segLabelPath[id] for id in ids],
-                [self.metaPath[id] for id in ids],
-                [self.sceneName[id] for id in ids],
-                [self.annId[id] for id in ids])
+            return (self.rgbPath, self.depthPath, self.segLabelPath, self.metaPath, self.rectLabelPath, self.sceneName, self.annId)
+        
+        if len(extargs) == 0:
+            if isinstance(ids, int):
+                return (self.rgbPath[ids], self.depthPath[ids], self.segLabelPath[ids], self.metaPath[ids], self.rectLabelPath[ids], self.sceneName[ids], self.annId[ids])
+            else:
+                return ([self.rgbPath[id] for id in ids],
+                    [self.depthPath[id] for id in ids],
+                    [self.segLabelPath[id] for id in ids],
+                    [self.metaPath[id] for id in ids],
+                    [self.rectLabelPath[id] for id in ids],
+                    [self.sceneName[id] for id in ids],
+                    [self.annId[id] for id in ids])
+        if len(extargs) == 2:
+            sceneId = ids
+            camera, annId = extargs
+            rgbPath = os.path.join(self.root, 'scenes', 'scene_'+str(sceneId).zfill(4), camera, 'rgb', str(annId).zfill(4)+'.png')
+            depthPath = os.path.join(self.root, 'scenes', 'scene_'+str(sceneId).zfill(4), camera, 'depth', str(annId).zfill(4)+'.png')
+            segLabelPath = os.path.join(self.root, 'scenes', 'scene_'+str(sceneId).zfill(4), camera, 'label', str(annId).zfill(4)+'.png')
+            metaPath = os.path.join(self.root, 'scenes', 'scene_'+str(sceneId).zfill(4), camera, 'meta', str(annId).zfill(4)+'.mat')
+            rectLabelPath = os.path.join(self.root, 'scenes', 'scene_'+str(sceneId).zfill(4), camera, 'rectangle_grasp', str(annId).zfill(4)+'.npy')
+            scene_name = 'scene_'+str(sceneId).zfill(4)
+            return (rgbPath,depthPath,segLabelPath,metaPath,rectLabelPath,scene_name,annId)
 
     def showObjGrasp(self, objIds=[], numGrasp=10, th=0.5, saveFolder='save_fig', show=False):
         from .utils.vis import visObjGrasp
