@@ -298,7 +298,7 @@ class GraspNet():
         assert format == '6d' or format == 'rect', 'format must be "6d" or "rect"'
         if format == '6d':
             from .utils.xmlhandler import xmlReader
-            from .utils.utils import generate_scene, generate_views, get_model_grasps, batch_viewpoint_params_to_matrix
+            from .utils.utils import generate_scene, generate_views, get_model_grasps, batch_viewpoint_params_to_matrix, transform_points
             
             camera_poses = np.load(os.path.join(self.root,'scenes','scene_%04d' %(sceneId,),camera, 'camera_poses.npy'))
             camera_pose = camera_poses[annId]
