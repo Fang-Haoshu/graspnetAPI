@@ -364,7 +364,7 @@ class GraspNet():
 
         - ids: int or list of int of the the data ids.
 
-        - 
+        - extargs: extra arguments. This function can also be called with loadData(sceneId, camera, annId)
 
         **Output:**
 

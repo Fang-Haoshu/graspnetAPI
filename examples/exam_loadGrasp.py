@@ -31,6 +31,6 @@ for k in _6d_grasp.keys():
     print('friction coefficients:')
     print(_6d_grasp[k]['fric_coefs'])
 
-rect_grasp = g.loadGrasp(sceneId = sceneId, annId = 0, format = '6d', camera = 'kinect', grasp_thresh = 0.4)
-print('=======================\ngrasps number = %d format = rect\n=======================' % (rect_grasp.shape[0],))
-print(rect_grasp)
+# rect_grasp = g.loadGrasp(sceneId = sceneId, annId = 0, format = '6d', camera = 'kinect', grasp_thresh = 0.4)
+# print('=======================\ngrasps number = %d format = rect\n=======================' % (rect_grasp.shape[0],))
+# print(rect_grasp)
