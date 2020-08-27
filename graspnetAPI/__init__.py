@@ -1,3 +1,7 @@
-from .graspnet import GraspNet
+__author__ = 'mhgou'
+__version__ = '1.0'
 
-__all__ = ('GraspNet',)
+from .graspnet import GraspNet
+from .graspnet_eval import GraspNetEval
+
+__all__ = ('GraspNet', 'GraspNetEval')

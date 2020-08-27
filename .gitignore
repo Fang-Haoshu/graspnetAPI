@@ -1,1 +1,6 @@
 *.pyc
+*.so
+*.o
+*.egg-info/
+/graspnetAPI/dump_full/
+/graspnetAPI/eval/acc_novel

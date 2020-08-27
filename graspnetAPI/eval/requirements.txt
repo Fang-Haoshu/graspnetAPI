@@ -1,0 +1,11 @@
+numpy
+open3d==0.8.0.0
+transforms3d
+pillow
+cython
+matplotlib
+pywavefront
+autolab-core
+autolab-perception
+trimesh
+scikit-image
