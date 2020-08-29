@@ -8,7 +8,8 @@ A quick start up is to look at vis.py
 
 ```bash
 git clone https://github.com/Fang-Haoshu/graspnetAPI.git
-pip3 install .
+cd graspnetAPI
+bash install.sh
 ```
 
 ## Example
