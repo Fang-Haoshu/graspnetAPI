@@ -3,7 +3,7 @@ __version__ = '1.0'
 
 # GraspNetAPI example for evaluate grasps for a scene.
 # change the graspnet_root path
-
+import numpy as np
 from graspnetAPI import GraspNetEval
 
 ####################################################################
