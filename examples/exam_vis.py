@@ -21,7 +21,7 @@ g.showObjGrasp(objIds = 0, show=True)
 g.show6DPose(sceneIds=0, show=True)
 
 # show scene rectangle grasps
-g.showSceneGrasp(sceneIds=0, format = 'rect', show = True, numGrasp = 20)
+# g.showSceneGrasp(sceneIds=0, format = 'rect', show = True, numGrasp = 20)
 
 # show scene 6d grasps(You may need to wait several minutes)
 g.showSceneGrasp(sceneIds=0, format = '6d', show = True, numGrasp = 2)
