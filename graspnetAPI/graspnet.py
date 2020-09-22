@@ -348,7 +348,7 @@ class GraspNet():
 
                 Rs = batch_viewpoint_params_to_matrix(-views, angles)
                 Rs = np.matmul(trans[np.newaxis, :3, :3], Rs)
-
+                Rs = np.matmul(np.linalg.inv(camera_pose)[np.newaxis,:3,:3], Rs)
                 grasp[obj_idx] = {'points':target_points,'Rs':Rs,'depths':depths,'widths':widths,'fric_coefs':fric_coefs}
             
             return grasp
