@@ -1,8 +1,6 @@
 # graspnetAPI
 
-GraspNet API comming soon!
-
-A quick start up is to look at vis.py
+# NOTE: Official version is available at https://github.com/graspnet/graspnetAPI. Please move to this repo
 
 ## Install
 
