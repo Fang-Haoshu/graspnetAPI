@@ -16,7 +16,7 @@ setup(
         'open3d==0.8.0',
         'trimesh==3.7.14',
         'tqdm==4.48.2',
-        'Pillow==7.2.0',
+        'Pillow==9.0.0',
         'opencv-python'
     ]
 )
